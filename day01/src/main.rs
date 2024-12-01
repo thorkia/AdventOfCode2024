@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufRead};
 use std::path::Path;
+use std::time::Instant;
 
 fn lines_from_file<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where
@@ -70,6 +71,7 @@ fn part2(lines: &[String]) {
 }
 
 fn main() {
+    let total_start = Instant::now();
     let Ok(lines) = lines_from_file("./src/input.txt") else {
         panic!("Could not read file");
     };
@@ -81,6 +83,16 @@ fn main() {
         }
     }
 
+    let start = Instant::now();
     part1(&processed_lines);
+    let duration = start.elapsed();
+    println!("Part 1 took {}microseconds", duration.as_micros());
+
+    let start = Instant::now();
     part2(&processed_lines);
+    let duration = start.elapsed();
+    println!("Part 2 took {}microseconds", duration.as_micros());
+
+    let duration = total_start.elapsed();
+    println!("Total took {}microseconds", duration.as_micros());
 }
