@@ -53,6 +53,30 @@ fn part1(lines: &[String]) {
     println!("{}", valid_reports);
 }
 
+fn is_valid_pair(part: i32, next_part: i32, increasing: bool) -> bool {
+    //If the parts are the same, then it's not valid
+    if part == next_part {
+        return false;
+    }
+
+    //If the parts are more than 3 apart, then it's not valid
+    if (part - next_part).abs() > 3 {
+        return false;  
+    }
+    
+    //If it's increasing, then the current part must be less than the next part
+    if increasing && part >= next_part {
+        return false;
+    }
+
+    //If it's decreasing, then the current part must be greate than the next part
+    if !increasing && part <= next_part {
+        return false;
+    }
+
+    //If we've made it this far, then it's valid
+    return true;
+}
 
 fn part2(lines: &[String]) {
     let mut valid_reports = 0;
@@ -62,14 +86,64 @@ fn part2(lines: &[String]) {
         let part1 = parts[0].parse::<i32>().unwrap();
         let part2 = parts[1].parse::<i32>().unwrap();
 
-        let increasing = part2 > part1;
+        let mut increasing = part2 > part1;
         let mut dampener = false;
         let mut is_valid = false;
 
         //Redo this entirely
+        let mut i = 0;
+        while i+1 < parts.len() {
+            let part = parts[i].parse::<i32>().unwrap();
+            let next_part = parts[i + 1].parse::<i32>().unwrap();
 
+            if part == next_part {
+                if dampener {
+                    is_valid = false;
+                    break;
+                } else {
+                    dampener = true;
+                    is_valid = true;
+                    if i==0 { //if on the first index reset the direction
+                        increasing = parts[i+2].parse::<i32>().unwrap() > next_part;
+                    }
+                }
+            }
 
-        for i in 1..parts.len() {
+            if (part - next_part).abs() > 3 {                
+                //If the dampener is alreadset, then it's not valid
+                if dampener {
+                    is_valid = false;
+                    break;
+                }
+                
+                //If its the last item and we're not dampened, then it's valid
+                if i+1 == parts.len() - 1  && !dampener{
+                    is_valid = true;
+                    break;
+                }            
+
+                dampener = true;
+                is_valid = false;
+
+                //If it's the first item, we turn on the dampener
+                //We should also recheck the direction.
+                if i == 0 {                    
+                    increasing = parts[i+2].parse::<i32>().unwrap() > next_part;
+                    is_valid = true;
+                }
+            }
+
+            //Check if increasind and not, then check if decreasing and not
+            if increasing && next_part > part {
+                is_valid = true;
+            } else if !increasing && part < prev_part {
+                is_valid = true;
+            }
+
+            i += 1;
+        }
+
+        /* for i in 1..parts.len() {
             let part = parts[i].parse::<i32>().unwrap();
             let prev_part = parts[i - 1].parse::<i32>().unwrap();
             
@@ -103,14 +177,15 @@ fn part2(lines: &[String]) {
                     break;
                 }
             }            
-        }
+        } */
 
         //println!("{} - {}", line, is_valid);
         if is_valid {
             valid_reports += 1;
-            if dampener {
-                println!("{} - {}", line, is_valid);
-            }
+            println!("{} - {}", line, is_valid);
+            //if dampener {
+            //    println!("{} - {}", line, is_valid);
+            //}
         } /* else {
             println!("{} - {}", line, is_valid);
         }      */
@@ -123,7 +198,7 @@ fn part2(lines: &[String]) {
 
 fn main() {
     let total_start = Instant::now();
-    let Ok(lines) = lines_from_file("./src/input.txt") else {
+    let Ok(lines) = lines_from_file("./src/test_input.txt") else {
         panic!("Could not read file");
     };
 
